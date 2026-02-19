@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laser Settings Library</title>
+
+    <style>
+      :root {
+        --bg: #050505;
+        --card: #0d0d0d;
+        --card-soft: #090909;
+        --green: #00ff88;
+        --green-soft: #00aa55;
+        --text: #eaeaea;
+        --muted: #8a8a8a;
+        --border: #141414;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          "Roboto", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: radial-gradient(circle at top left, #111 0, #050505 40%);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* HEADER */
+      header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        backdrop-filter: blur(16px);
+        background: linear-gradient(
+          to bottom,
+          rgba(5, 5, 5, 0.95),
+          rgba(5, 5, 5, 0.9)
+        );
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      h1 {
+        margin: 0;
+        font-weight: 650;
+        font-size: 20px;
+        letter-spacing: 0.12em;
+        color: var(--green);
+      }
+
+      .subtitle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+      }
+
+      .header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .header-center {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        flex-shrink: 0;
+      }
+
+      .machine-selector {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 6px 12px;
+        background: radial-gradient(circle at top left, #101010 0, #050505 55%);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02),
+          0 12px 32px rgba(0, 0, 0, 0.8);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .machine-selector:hover {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.3),
+          0 18px 40px rgba(0, 0, 0, 0.9),
+          0 0 20px rgba(0, 255, 136, 0.1);
+        transform: translateY(-2px) scale(1.02);
+        background: radial-gradient(circle at top left, #171717 0, #050505 60%);
+      }
+
+      .machine-visual {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .machine-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        border: 1px dashed #2a2a2a;
+        background: radial-gradient(circle at 20% 0, #1c1c1c, #050505);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+        padding: 6px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .machine-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+        display: block;
+      }
+
+      .machine-icon .icon-placeholder {
+        font-size: 9px;
+        opacity: 0.6;
+      }
+
+      .machine-name-chip {
+        padding: 3px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(0, 0, 0, 0.7);
+        font-size: 10px;
+        color: var(--muted);
+        max-width: 120px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      #search {
+        background: #080808;
+        border-radius: 999px;
+        border: 1px solid #262626;
+        color: var(--text);
+        padding: 8px 14px;
+        width: 400px;
+        max-width: 100%;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      #search::placeholder {
+        color: #555;
+      }
+
+      #search:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.2), 0 4px 12px rgba(0, 255, 136, 0.1);
+        transform: translateY(-1px);
+        width: 450px;
+      }
+
+      /* CONTENT */
+      main.content {
+        flex: 1;
+        padding: 18px 24px 32px;
+        overflow-y: auto;
+        position: relative;
+      }
+
+      .settings-list {
+        max-width: 960px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .setting-card {
+        background: radial-gradient(circle at top left, #101010 0, #050505 55%);
+        border-radius: 16px;
+        padding: 12px 15px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .setting-card:nth-child(1) { animation-delay: 0.05s; }
+      .setting-card:nth-child(2) { animation-delay: 0.1s; }
+      .setting-card:nth-child(3) { animation-delay: 0.15s; }
+      .setting-card:nth-child(4) { animation-delay: 0.2s; }
+      .setting-card:nth-child(5) { animation-delay: 0.25s; }
+      .setting-card:nth-child(n+6) { animation-delay: 0.3s; }
+
+      .setting-card:hover {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.2),
+          0 12px 40px rgba(0, 0, 0, 0.7),
+          0 0 20px rgba(0, 255, 136, 0.1);
+        transform: translateY(-2px) scale(1.01);
+        background: radial-gradient(circle at top left, #141414 0, #050505 60%);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .setting-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        border: 1px dashed #303030;
+        background: linear-gradient(135deg, #181818, #050505);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--muted);
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .setting-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        display: block;
+      }
+
+      .setting-icon .icon-placeholder {
+        font-size: 9px;
+        opacity: 0.6;
+      }
+
+      .setting-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .setting-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+      }
+
+      .setting-title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .setting-title {
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .setting-title strong {
+        font-weight: 600;
+      }
+
+      .setting-technology-badge {
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 255, 136, 0.4);
+        color: var(--green);
+        background: rgba(0, 255, 136, 0.12);
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .setting-subtitle {
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      .setting-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 10px;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .meta-chip {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 999px;
+        padding: 3px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+
+      .setting-siblings {
+        margin-top: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .sibling-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .sibling-row:hover {
+        background: rgba(0, 255, 136, 0.05);
+        border-color: rgba(0, 255, 136, 0.3);
+        transform: translateX(4px);
+      }
+
+      .sibling-row-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 9px;
+        border: 1px dashed #303030;
+        background: linear-gradient(135deg, #181818, #050505);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--muted);
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sibling-row-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 7px;
+        display: block;
+      }
+
+      .sibling-row-icon .icon-placeholder {
+        font-size: 8px;
+        opacity: 0.6;
+      }
+
+      .sibling-row-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .sibling-row-title {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sibling-row-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        margin-top: 1px;
+        color: var(--muted);
+        opacity: 0.85;
+      }
+
+      .empty-state {
+        padding: 40px 16px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* LOADING */
+      .loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: radial-gradient(
+          circle at top,
+          rgba(8, 8, 8, 0.98),
+          rgba(0, 0, 0, 0.98)
+        );
+        z-index: 5;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .loading-overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+      }
+
+      .progress-circle-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: 8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(
+          circle at center,
+          rgba(8, 8, 8, 0.95),
+          rgba(0, 0, 0, 0.9)
+        );
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .progress-circle-wrap.visible {
+        opacity: 1;
+      }
+
+      .progress-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--green) calc(var(--progress, 0) * 1%),
+          rgba(255, 255, 255, 0.06) 0
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% {
+          box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 40px rgba(0, 255, 136, 0.5);
+        }
+      }
+
+      .progress-circle-inner {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--green);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .loading-spinner {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.05);
+        border-top-color: var(--green);
+        animation: spin 0.9s linear infinite;
+      }
+
+      .loading-text {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .loading-skeleton {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: min(640px, 100%);
+      }
+
+      .loading-card {
+        border-radius: 14px;
+        border: 1px solid #141414;
+        background: linear-gradient(90deg, #090909, #111, #090909);
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .loading-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          120deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.08) 40%,
+          transparent 80%
+        );
+        transform: translateX(-100%);
+        animation: shimmer 1.4s infinite;
+      }
+
+      .loading-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #151515;
+        flex-shrink: 0;
+      }
+
+      .loading-lines {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .loading-line {
+        height: 8px;
+        border-radius: 999px;
+        background: #151515;
+      }
+
+      .loading-line.short {
+        width: 45%;
+      }
+
+      .loading-line.medium {
+        width: 70%;
+      }
+
+      .loading-line.full {
+        width: 100%;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* MODAL */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(circle at top, rgba(0, 0, 0, 0.8), #000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 20;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(8px);
+      }
+
+      .modal:not(.hidden) {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .modal-content {
+        background: linear-gradient(160deg, #050505 0, #020202 70%);
+        border-radius: 18px;
+        border: 1px solid #202020;
+        max-width: 960px;
+        width: min(960px, 96vw);
+        max-height: 82vh;
+        padding: 20px 22px 18px;
+        box-shadow: 0 26px 80px rgba(0, 0, 0, 0.9);
+        position: relative;
+        overflow-y: auto;
+        transform: scale(0.9) translateY(20px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .modal:not(.hidden) .modal-content {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1px solid #363636;
+        background: #080808;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .modal-close:hover {
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      .modal-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .modal-header-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .modal-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        border: 1px dashed #303030;
+        background: linear-gradient(135deg, #181818, #050505);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--muted);
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .modal-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 10px;
+        display: block;
+      }
+
+      .modal-icon .icon-placeholder {
+        font-size: 9px;
+        opacity: 0.6;
+      }
+
+      #modalBody h2 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--green);
+      }
+
+      .modal-subtitle {
+        margin-top: 6px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        font-size: 11px;
+      }
+
+      .badge {
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 255, 136, 0.4);
+        color: var(--green);
+        background: rgba(0, 255, 136, 0.08);
+      }
+
+      .badge-muted {
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .modal-sections {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        margin-top: 6px;
+      }
+
+      .modal-section {
+        background: var(--card);
+        border-radius: 14px;
+        border: 1px solid #191919;
+        padding: 12px 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .modal-section:nth-child(1) { animation-delay: 0.1s; }
+      .modal-section:nth-child(2) { animation-delay: 0.15s; }
+      .modal-section:nth-child(3) { animation-delay: 0.2s; }
+      .modal-section:nth-child(4) { animation-delay: 0.25s; }
+      .modal-section:nth-child(5) { animation-delay: 0.3s; }
+      .modal-section:nth-child(n+6) { animation-delay: 0.35s; }
+
+      .modal-section:hover {
+        border-color: rgba(0, 255, 136, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-section h3 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        color: var(--green);
+      }
+
+      .example-images {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .example-image-wrap {
+        flex: 1 1 200px;
+        min-width: 160px;
+        max-width: 280px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--card);
+        aspect-ratio: 16 / 10;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .example-image-wrap:hover {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .example-image-wrap .example-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .example-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+      }
+
+      .example-image-wrap img[style*="display: block"],
+      .example-image-wrap.loaded img {
+        display: block !important;
+      }
+
+      .example-image-wrap.loaded .example-image-placeholder {
+        display: none !important;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1.05);
+        }
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        padding: 2px 0;
+      }
+
+      .detail-label {
+        color: var(--muted);
+      }
+
+      .detail-value {
+        font-family: "JetBrains Mono", "Consolas", monospace;
+        font-size: 11px;
+      }
+
+      .chips-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .chip-button {
+        border-radius: 999px;
+        border: 1px solid #303030;
+        background: #080808;
+        color: var(--text);
+        padding: 4px 10px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .chip-button:hover {
+        border-color: var(--green);
+        color: var(--green);
+        transform: translateY(-1px) scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 255, 136, 0.2);
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 768px) {
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .header-right {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        #search {
+          flex: 1;
+          min-width: 120px;
+        }
+
+        .setting-card {
+          padding: 11px 12px;
+        }
+
+        .setting-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .setting-subtitle {
+          text-align: left;
+        }
+
+        .modal-sections {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .modal-content {
+          max-height: 90vh;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="header-top">
+        <div class="header-left">
+          <h1>LASER LIBRARY</h1>
+          <div class="subtitle">Settings according to machine, material &amp; color</div>
+        </div>
+        <div class="header-center">
+          <input
+            type="text"
+            id="search"
+            placeholder="Search material, color, parameter..."
+          />
+        </div>
+        <div class="header-right">
+          <div class="machine-selector" id="machineSelector">
+            <div class="machine-visual">
+              <div class="machine-icon">
+                <span class="icon-placeholder">Bild</span>
+                <img id="machineImage" style="display: none;" alt="" />
+              </div>
+              <div class="machine-name-chip" id="machineLabel">Maschine</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div id="progressCircleWrap" class="progress-circle-wrap" aria-hidden="true">
+        <div id="progressCircle" class="progress-circle" style="--progress: 0">
+          <div id="progressCircleInner" class="progress-circle-inner">0%</div>
+        </div>
+      </div>
+      <div id="loadingOverlay" class="loading-overlay hidden" aria-hidden="true">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Einstellungen werden geladen…</div>
+        <div class="loading-skeleton">
+          <div class="loading-card">
+            <div class="loading-avatar"></div>
+            <div class="loading-lines">
+              <div class="loading-line full"></div>
+              <div class="loading-line medium"></div>
+              <div class="loading-line short"></div>
+            </div>
+          </div>
+          <div class="loading-card">
+            <div class="loading-avatar"></div>
+            <div class="loading-lines">
+              <div class="loading-line full"></div>
+              <div class="loading-line medium"></div>
+              <div class="loading-line short"></div>
+            </div>
+          </div>
+          <div class="loading-card">
+            <div class="loading-avatar"></div>
+            <div class="loading-lines">
+              <div class="loading-line full"></div>
+              <div class="loading-line medium"></div>
+              <div class="loading-line short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsList" class="settings-list"></div>
+    </main>
+
+    <div id="detailModal" class="modal hidden">
+      <div class="modal-content">
+        <button
+          type="button"
+          class="modal-close"
+          aria-label="Detailansicht schließen"
+          onclick="closeModal()"
+        >
+          ×
+        </button>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbyztXGJlFEwwIe2Iw4fpumNgeHU-fDgmRCtPhM0cHkX7VRyiU2uicBYooH2Ln7sv4XV1w/exec";
+      const MACHINE_IMAGE_BASE =
+        "https://raw.githubusercontent.com/hoedii/laserparameter/main/media/";
+
+      let allData = [];
+      let currentMachine = "";
+      let machines = [];
+
+      function showProgress(percent) {
+        const wrap = document.getElementById("progressCircleWrap");
+        const circle = document.getElementById("progressCircle");
+        const inner = document.getElementById("progressCircleInner");
+        if (!wrap || !circle || !inner) return;
+        const p = Math.min(100, Math.round(percent));
+        circle.style.setProperty("--progress", p);
+        inner.textContent = p + "%";
+        wrap.classList.add("visible");
+        wrap.setAttribute("aria-hidden", "false");
+      }
+
+      function hideProgress() {
+        const wrap = document.getElementById("progressCircleWrap");
+        if (!wrap) return;
+        wrap.classList.remove("visible");
+        wrap.setAttribute("aria-hidden", "true");
+      }
+
+      async function fetchData() {
+        try {
+          showProgress(0);
+
+          const res = await fetch(API_URL);
+          showProgress(40);
+
+          const raw = await res.json();
+          showProgress(60);
+
+          allData = raw
+            .map((d, index) => ({ ...d, __id: index }))
+            .sort((a, b) => {
+              const m = String(a.Machine || "").localeCompare(
+                String(b.Machine || "")
+              );
+              if (m !== 0) return m;
+              const mat = String(a.Material || "").localeCompare(
+                String(b.Material || "")
+              );
+              if (mat !== 0) return mat;
+              return String(a.Color || "").localeCompare(
+                String(b.Color || "")
+              );
+            });
+
+          machines = [
+            ...new Set(
+              allData
+                .map((d) => d.Machine)
+                .filter((m) => m !== null && m !== undefined && m !== "")
+            ),
+          ];
+
+          if (machines.length && !currentMachine) {
+            currentMachine = machines[0];
+          }
+
+          showProgress(85);
+          updateMachineIconLabel();
+          renderSettings();
+
+          showProgress(100);
+          setTimeout(hideProgress, 300);
+        } catch (error) {
+          console.error(error);
+          hideProgress();
+          const container = document.getElementById("settingsList");
+          if (container) {
+            container.innerHTML =
+              '<div class="empty-state">Daten konnten nicht geladen werden.</div>';
+          }
+          hideLoading();
+        }
+      }
+
+      function updateMachineIconLabel() {
+        const label = document.getElementById("machineLabel");
+        if (label) {
+          label.textContent = currentMachine || "Maschine";
+        }
+
+        const img = document.getElementById("machineImage");
+        const placeholder = document.querySelector(".machine-icon .icon-placeholder");
+        
+        if (!img || !placeholder) {
+          console.error("Machine icon elements not found");
+          return;
+        }
+
+        if (currentMachine) {
+          const slug = buildMachineSlug(currentMachine);
+          const imageUrl = `${MACHINE_IMAGE_BASE}${slug}.jpg`;
+          
+          console.log("Loading machine image:", imageUrl);
+          console.log("Machine name:", currentMachine);
+          console.log("Generated slug:", slug);
+          
+          // Reset image
+          img.style.display = "none";
+          placeholder.style.display = "block";
+          
+          // Create new image to test loading
+          const testImg = new Image();
+          testImg.onload = function() {
+            console.log("Image loaded successfully:", imageUrl);
+            img.src = imageUrl;
+            img.style.display = "block";
+            placeholder.style.display = "none";
+            img.onerror = null; // Clear any previous error handler
+          };
+          testImg.onerror = function() {
+            console.error("Failed to load image:", imageUrl);
+            console.log("Trying alternative formats...");
+            
+            // Try .png as fallback
+            const pngUrl = `${MACHINE_IMAGE_BASE}${slug}.png`;
+            const testPng = new Image();
+            testPng.onload = function() {
+              console.log("PNG image loaded:", pngUrl);
+              img.src = pngUrl;
+              img.style.display = "block";
+              placeholder.style.display = "none";
+            };
+            testPng.onerror = function() {
+              console.error("Both JPG and PNG failed for:", slug);
+              img.style.display = "none";
+              placeholder.style.display = "block";
+            };
+            testPng.src = pngUrl;
+          };
+          testImg.src = imageUrl;
+        } else {
+          img.style.display = "none";
+          placeholder.style.display = "block";
+        }
+      }
+      
+      function hideLoading() {
+        const overlay = document.getElementById("loadingOverlay");
+        if (!overlay) return;
+        overlay.classList.add("hidden");
+      }
+
+      function buildMachineSlug(name) {
+        const clean = String(name || "").trim();
+        if (!clean) return "";
+        
+        // Pattern: "xTool F2" -> "F2_xtool"
+        const parts = clean.split(/\s+/);
+        if (parts.length >= 2) {
+          // Reverse order: last part first, then rest lowercase
+          const last = parts[parts.length - 1];
+          const rest = parts.slice(0, -1).join(" ").toLowerCase();
+          return `${last}_${rest}`;
+        }
+        
+        // Fallback: simple underscore replacement, lowercase
+        return clean.toLowerCase().replace(/\s+/g, "_");
+      }
+
+      function buildMaterialImageFilename(material, color) {
+        const mat = String(material || "").trim();
+        if (!mat) return "";
+        
+        const col = String(color || "").trim();
+        
+        // Wenn keine Farbe vorhanden oder Farbe ist "-" oder "_", nur Materialname
+        if (!col || col === "-" || col === "_") {
+          return `${mat}.jpg`;
+        }
+        
+        // Material und Farbe kombinieren: "PLA" + "Light Blue" -> "PLA_Light_Blue.jpg"
+        const colorNormalized = col.replace(/\s+/g, "_");
+        return `${mat}_${colorNormalized}.jpg`;
+      }
+
+      function buildExampleImageFilename(material, color, bspIndex) {
+        const mat = String(material || "").trim();
+        if (!mat) return "";
+        
+        const col = String(color || "").trim();
+        const suffix = "Bsp" + bspIndex;
+        
+        if (!col || col === "-" || col === "_") {
+          return `${mat}_${suffix}.jpg`;
+        }
+        
+        const colorNormalized = col.replace(/\s+/g, "_");
+        return `${mat}_${colorNormalized}_${suffix}.jpg`;
+      }
+
+      function getFilteredData() {
+        const searchInput = document.getElementById("search");
+        const query = (searchInput?.value || "").toLowerCase().trim();
+
+        let list = allData;
+        if (currentMachine) {
+          list = list.filter((d) => d.Machine === currentMachine);
+        }
+
+        if (!query) return list;
+
+        return list.filter((d) =>
+          Object.values(d).some((v) =>
+            String(v ?? "")
+              .toLowerCase()
+              .includes(query)
+          )
+        );
+      }
+
+      function createSettingCard(entry) {
+        const card = document.createElement("div");
+        card.className = "setting-card";
+        const mode = entry["Mode"] || "";
+        const modeBadge = mode
+          ? `<span class="setting-technology-badge">${escapeHtml(mode)}</span>`
+          : "";
+
+        const imageFilename = buildMaterialImageFilename(entry.Material, entry.Color);
+        const imageUrl = imageFilename ? `${MACHINE_IMAGE_BASE}${imageFilename}` : "";
+
+        card.innerHTML = `
+          <div class="setting-icon">
+            <span class="icon-placeholder">Bild</span>
+            ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(formatMaterialTitle(entry))}" style="display: none;" onerror="this.style.display='none'; this.previousElementSibling.style.display='block';" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" />` : ""}
+          </div>
+          <div class="setting-main">
+            <div class="setting-header">
+              <div class="setting-title-row">
+                <div class="setting-title">
+                  <strong>${formatMaterialTitle(entry)}</strong>
+                </div>
+                ${modeBadge}
+              </div>
+              <div class="setting-subtitle">
+                ${escapeHtml(entry.Machine || "")}
+              </div>
+            </div>
+            <div class="setting-meta">
+              ${metaChip("Dot Duration", entry["Dot Duration"])}
+              ${metaChip("Powerrange", entry["Powerrange"])}
+              ${metaChip("DPI", entry["DPI"])}
+              ${metaChip("Power", entry["Power"])}
+              ${metaChip("Speed", entry["Speed"])}
+              ${metaChip("Lines/cm", entry["Lines per cm"])}
+              ${metaChip("Technology", entry["Technology"])}
+            </div>
+          </div>
+        `;
+        card.onclick = () => openModal(entry.__id);
+        return card;
+      }
+
+      function renderSettings() {
+        const container = document.getElementById("settingsList");
+        if (!container) return;
+
+        const list = getFilteredData();
+        container.innerHTML = "";
+
+        if (!list.length) {
+          container.innerHTML =
+            '<div class="empty-state">Keine Einstellungen für diese Maschine gefunden.</div>';
+          return;
+        }
+
+        list.forEach((entry) => {
+          container.appendChild(createSettingCard(entry));
+        });
+      }
+
+      async function renderSettingsProgressive() {
+        const container = document.getElementById("settingsList");
+        if (!container) return;
+
+        hideLoading();
+
+        const list = getFilteredData();
+        container.innerHTML = "";
+
+        if (!list.length) {
+          container.innerHTML =
+            '<div class="empty-state">Keine Einstellungen für diese Maschine gefunden.</div>';
+          return;
+        }
+
+        for (let i = 0; i < list.length; i++) {
+          container.appendChild(createSettingCard(list[i]));
+          await new Promise((r) => setTimeout(r, 28));
+        }
+      }
+
+      function metaChip(label, value) {
+        if (!value) return "";
+        return `<span class="meta-chip">${escapeHtml(label)}: ${escapeHtml(
+          String(value)
+        )}</span>`;
+      }
+
+      function formatMaterialTitle(entry) {
+        const material = entry.Material || "-";
+        const color = entry.Color || "";
+        if (!color || color === "-" || color === "_") {
+          return escapeHtml(material);
+        }
+        return `${escapeHtml(material)} – ${escapeHtml(color)}`;
+      }
+
+      function openModal(id) {
+        const entry = allData.find((d) => d.__id === id);
+        if (!entry) return;
+
+        const modal = document.getElementById("detailModal");
+        const body = document.getElementById("modalBody");
+        if (!modal || !body) return;
+
+        const siblings = allData.filter(
+          (d) =>
+            d.Material === entry.Material &&
+            d.Machine === entry.Machine &&
+            d.__id !== entry.__id
+        );
+
+        const entryImageFilename = buildMaterialImageFilename(entry.Material, entry.Color);
+        const entryImageUrl = entryImageFilename ? `${MACHINE_IMAGE_BASE}${entryImageFilename}` : "";
+
+        body.innerHTML = `
+          <div class="modal-title-row">
+            <div class="modal-header-with-icon">
+              <div class="modal-icon">
+                <span class="icon-placeholder">Bild</span>
+                ${entryImageUrl ? `<img src="${entryImageUrl}" alt="${escapeHtml(formatMaterialTitle(entry))}" style="display: none;" onerror="this.style.display='none'; this.previousElementSibling.style.display='block';" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" />` : ""}
+              </div>
+              <div>
+                <h2>${formatMaterialTitle(entry)}</h2>
+                <div class="modal-subtitle">
+                  ${
+                    entry.Machine
+                      ? `<span class="badge badge-muted">${escapeHtml(
+                          entry.Machine
+                        )}</span>`
+                      : ""
+                  }
+                  ${
+                    entry.Technology
+                      ? `<span class="badge">${escapeHtml(
+                          entry.Technology
+                        )}</span>`
+                      : ""
+                  }
+                  ${
+                    entry.Mode
+                      ? `<span class="badge">${escapeHtml(
+                          entry.Mode
+                        )}</span>`
+                      : ""
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-sections">
+            <section class="modal-section">
+              <h3>Bildgravur</h3>
+              ${detailParam("Dot Duration", entry["Dot Duration"])}
+              ${detailParam("Powerrange", entry["Powerrange"])}
+              ${detailParam("DPI", entry["DPI"])}
+            </section>
+
+            <section class="modal-section">
+              <h3>Text / Vektoren</h3>
+              ${detailParam("Power", entry["Power"])}
+              ${detailParam("Speed", entry["Speed"])}
+              ${detailParam("Lines per cm", entry["Lines per cm"])}
+            </section>
+
+            <section class="modal-section">
+              <h3>Weitere Infos</h3>
+              ${detailParam("Mode", entry["Mode"])}
+              ${detailParam("Technology", entry["Technology"])}
+              ${detailParam("Pass", entry["Pass"])}
+              ${detailParam("Bitmap", entry["Bitmap"])}
+              ${detailParam("Engrave mode", entry["Engrave mode"])}
+              ${detailParam("Products", entry["Products"])}
+            </section>
+
+            ${
+              (() => {
+                const exampleImages = [];
+                for (let i = 1; i <= 4; i++) {
+                  const exFilename = buildExampleImageFilename(entry.Material, entry.Color, i);
+                  if (exFilename) {
+                    exampleImages.push({ index: i, url: `${MACHINE_IMAGE_BASE}${exFilename}?v=${Date.now()}`, filename: exFilename });
+                  }
+                }
+                if (exampleImages.length === 0) return "";
+                const sectionId = `ex-section-${entry.__id}`;
+                return `
+            <section class="modal-section" id="${sectionId}">
+              <h3>Example Images:</h3>
+              <div class="example-images">
+                ${exampleImages.map((ex) => `
+                <div class="example-image-wrap" data-bsp="${ex.index}">
+                  <span class="example-image-placeholder">Bsp${ex.index}</span>
+                  <img src="${ex.url}"
+     style="display:none;"
+     onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+     onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';" />
+ alt="${escapeHtml(formatMaterialTitle(entry))} Bsp${ex.index}" loading="lazy" onload="(function(){const wrap=this.parentElement;wrap.style.display='flex';this.style.display='block';this.previousElementSibling.style.display='none';wrap.classList.add('loaded');})();" onerror="(function(){
+  this.style.display='none';
+  this.previousElementSibling.style.display='flex';
+})();" />
+                </div>`).join("")}
+              </div>
+            </section>`;
+              })()
+            }
+
+            ${
+              siblings.length
+                ? `
+              <section class="modal-section">
+                <h3>Weitere Einstellungen für ${escapeHtml(
+                  entry.Material || ""
+                )}</h3>
+                <div class="setting-siblings">
+                  ${siblings
+                    .map(
+                      (s) => {
+                        const imageFilename = buildMaterialImageFilename(s.Material, s.Color);
+                        const imageUrl = imageFilename ? `${MACHINE_IMAGE_BASE}${imageFilename}` : "";
+                        return `
+                    <div class="sibling-row" onclick="openModal(${s.__id})">
+                      <div class="sibling-row-icon">
+                        <span class="icon-placeholder">Bild</span>
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(formatMaterialTitle(s))}" style="display: none;" onerror="this.style.display='none'; this.previousElementSibling.style.display='block';" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" />` : ""}
+                      </div>
+                      <div class="sibling-row-main">
+                        <div class="sibling-row-title">
+                          ${formatMaterialTitle(s)}
+                        </div>
+                        <div class="sibling-row-meta">
+                          ${metaChip("Power", s["Power"])}
+                          ${metaChip("Speed", s["Speed"])}
+                          ${metaChip("DPI", s["DPI"])}
+                        </div>
+                      </div>
+                    </div>`;
+                      }
+                    )
+                    .join("")}
+                </div>
+              </section>
+            `
+                : ""
+            }
+          </div>
+        `;
+
+        modal.classList.remove("hidden");
+        
+      }
+
+      function detailParam(label, value) {
+        if (!value) return "";
+        return `
+          <div class="detail-row">
+            <span class="detail-label">${escapeHtml(label)}</span>
+            <span class="detail-value">${escapeHtml(String(value))}</span>
+          </div>
+        `;
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("detailModal");
+        if (modal) {
+          modal.classList.add("hidden");
+        }
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const machineSelector = document.getElementById("machineSelector");
+        if (machineSelector) {
+          machineSelector.addEventListener("click", () => {
+            if (!machines.length) return;
+            const idx = Math.max(
+              0,
+              machines.findIndex((m) => m === currentMachine)
+            );
+            const nextIndex = (idx + 1) % machines.length;
+            currentMachine = machines[nextIndex];
+            updateMachineIconLabel();
+            renderSettings();
+          });
+        }
+
+        const search = document.getElementById("search");
+        if (search) {
+          search.addEventListener("input", () => {
+            renderSettings();
+          });
+        }
+
+        const modal = document.getElementById("detailModal");
+        const modalContent = document.querySelector(".modal-content");
+        if (modal && modalContent) {
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              closeModal();
+            }
+          });
+          modalContent.addEventListener("click", (e) => e.stopPropagation());
+        }
+
+        fetchData();
+      });
+    </script>
+  </body>
+</html>
