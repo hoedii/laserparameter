@@ -110,6 +110,25 @@
         font-weight: 700;
       }
 
+      .compare-header {
+        padding: 28px 40px;
+        border-bottom: 1px solid #1a1a1a;
+        background: rgba(0, 255, 136, 0.02);
+      }
+
+      .compare-header h2 {
+        margin: 0 0 8px 0;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--green);
+      }
+
+      .compare-subtitle {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
       .subtitle {
         font-size: 12px;
         color: var(--muted);
@@ -257,9 +276,6 @@
       main.content::-webkit-scrollbar {
         display: none;
       }
-        overflow-y: auto;
-        position: relative;
-      }
 
       .settings-list {
         max-width: 960px;
@@ -298,6 +314,19 @@
           0 0 20px rgba(0, 255, 136, 0.1);
         transform: translateY(-2px) scale(1.01);
         background: radial-gradient(circle at top left, #141414 0, #050505 60%);
+      }
+
+      .setting-card {
+        cursor: grab;
+      }
+
+      .setting-card:active {
+        cursor: grabbing;
+      }
+
+      .setting-card.dragging {
+        opacity: 0.5;
+        transform: scale(0.98);
       }
 
       @keyframes fadeInUp {
@@ -1417,7 +1446,7 @@
 
         card.innerHTML = `
           <div class="setting-icon">
-            <span class="icon-placeholder">Bild</span>
+            <span class="icon-placeholder">Image</span>
             ${imageUrl ? `<img src="${imageUrl}" alt="${escapeHtml(formatMaterialTitle(entry))}" style="display: none;" onerror="this.style.display='none'; this.previousElementSibling.style.display='block';" onload="this.style.display='block'; this.previousElementSibling.style.display='none';" />` : ""}
           </div>
           <div class="setting-main">
@@ -1443,6 +1472,7 @@
             </div>
           </div>
         `;
+
         card.onclick = () => openModal(entry.__id);
         return card;
       }
